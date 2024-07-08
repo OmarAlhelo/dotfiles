@@ -1,0 +1,761 @@
+#+PROPERTY: header-args:emacs-lisp :tangle ../../.files/.config/emacs/default/init.el :mkdirp yes
+
+* Package Management Setup
+  Bootstrapping ~straight.el~
+  #+begin_src emacs-lisp
+    (defvar bootstrap-version)
+    (let ((bootstrap-file
+           (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
+          (bootstrap-version 6))
+      (unless (file-exists-p bootstrap-file)
+        (with-current-buffer
+            (url-retrieve-synchronously
+             "https://raw.githubusercontent.com/radian-software/straight.el/develop/install.el"
+             'silent 'inhibit-cookies)
+          (goto-char (point-max))
+          (eval-print-last-sexp)))
+      (load bootstrap-file nil 'nomessage))
+
+
+    (straight-use-package 'use-package)
+
+    (setq straight-use-package-by-default t)
+
+    (when init-file-debug
+      (setq use-package-verbose t
+            use-package-expand-minimally nil
+            use-package-compute-statistics t
+            debug-on-error t))
+
+    ;; use-pacakge extentions
+    (use-package use-package-chords
+      :disabled
+      :config (key-chord-mode 1))
+    (use-package use-package-ensure-system-package)
+  #+end_src
+
+* MacOS Tweaks
+  Copy exported environment variables from user's shell
+  #+begin_src emacs-lisp
+    (use-package exec-path-from-shell
+      :if (eq system-type 'darwin)
+      :config
+      (when (memq window-system '(mac ns x))
+        (exec-path-from-shell-initialize)))
+  #+end_src
+
+  Remap Mac keyboard keys for Emacs (I use this on top of *Goku* global keyword remaps)
+  #+begin_src emacs-lisp
+    (when (eq system-type 'darwin)
+      (setq mac-command-modifier 'control)
+      (setq mac-option-modifier  'meta)
+      (setq mac-control-modifier 'super)
+      (setq ns-function-modifier 'hyper)) ;; Fn => Hyper
+  #+end_src
+
+  Use `gls` over the built-in `ls` command
+  #+begin_src emacs-lisp
+    (when (eq system-type 'darwin)
+      (setq dired-use-ls-dired t
+            insert-directory-program "/opt/homebrew/bin/gls"
+            dired-listing-switches "-aBhl --group-directories-first"))
+  #+end_src
+
+* No Littering
+  Use no-littering to automatically set common paths to the new ~user-emacs-directory~ and customize a few Emacs variables
+  #+begin_src emacs-lisp
+    (use-package no-littering
+      :custom
+      (auto-save-file-name-transforms `((".*" ,(no-littering-expand-var-file-name "auto-save/") t)))
+      (custom-file (no-littering-expand-etc-file-name "custom.el"))
+      (make-backup-files nil)
+      (create-lockfiles nil)
+      :init
+      ;; Load external customizations
+      (load custom-file 'noerror))
+  #+end_src
+
+* Emacs Performance Tuning
+  Garbage Collection threshold & Process I/O buffer size
+  _NOTE_: /LSP mode performance significantly depends on those settings/
+  #+begin_src emacs-lisp
+    (setq gc-cons-threshold (* 100 1024 1024))     ;; 100MB (default 800KB)
+    (setq read-process-output-max (* 1 1024 1024)) ;; 1MB (default 4KB)
+  #+end_src
+
+* Text Editing Config
+** Basic Config
+   #+begin_src emacs-lisp
+     (use-package emacs
+       :straight (:type built-in)
+       :custom
+       (tab-width 8)          ;; [Buffer Local]
+       (indent-tabs-mode nil) ;; Disable <tab> inserts
+       (truncate-lines t)     ;; Don't wrap lines by default [Buffer Local]
+       :init
+       ;; Coding system
+       (prefer-coding-system 'utf-8)
+       (setq locale-coding-system 'utf-8)
+       (set-selection-coding-system 'utf-8)
+       (delete-selection-mode t)          ;; Overwrite region
+       (normal-erase-is-backspace-mode t) ;; Fix Backspace (in case Emacs detects it as Delete)
+       (global-auto-revert-mode t)        ;; Revert the buffer if its file changes
+       (setq auto-revert-verbose nil)     ;; Don't show message when a bufer reverts
+       (define-prefix-command 'help-map)
+       :bind
+       ("<f5>" . revert-buffer)
+       ("<escape>" . keyboard-escape-quit)
+       ("C-;"  . delete-backward-char) ;; Todo : change to an xmodmap config
+       ;; ("C-h"  . help-map) ;; Todo : change to an xmodmap config
+       ("C-z"  . nil))
+   #+end_src
+** Advanced Config
+   #+begin_src emacs-lisp
+     ;; Better dwim for comments
+     (use-package evil-nerd-commenter
+       :bind ("M-;" . evilnc-comment-or-uncomment-lines))
+
+     (use-package expand-region
+       :bind
+       ("M-o" . er/expand-region)
+       ("M-i" . er/contract-region))
+
+     (use-package move-dup
+       :bind
+       ("M-p"   . move-dup-move-lines-up)
+       ("M-n"   . move-dup-move-lines-down)
+       ("C-M-p" . move-dup-duplicate-up)
+       ("C-M-n" . move-dup-duplicate-down))
+
+
+     ;; With no region, creates a new cursor
+     (use-package multiple-cursors
+       :bind
+       (("C-M-o" . mc/mark-next-like-this)
+        ("C-M-i" . mc/mark-previous-like-this)
+        ("C-M-S-o" . mc/unmark-next-like-this)
+        ("C-M-S-i" . mc/unmark-previous-like-this)
+        :map mc/keymap ("<return>" . nil))) ;; allow RETURN edits
+
+     (use-package zop-to-char
+       :bind ("M-z" . zop-to-char))
+
+     (use-package string-inflection
+       :bind ("H-i" . string-inflection-all-cycle))
+   #+end_src
+** Movement & Navigation
+   #+begin_src emacs-lisp
+     (use-package avy
+       :bind
+       (:map goto-map ;; M-g
+             ("c" . avy-goto-char)             
+             ("w" . avy-goto-word-1)
+             ("M-g" . avy-goto-line)))         
+   #+end_src
+** Perspective
+   #+begin_src emacs-lisp
+     (use-package perspective
+       :after consult
+       :preface
+       (defvar persp-consult-source-perspectives
+         (list :name     "Workspaces"
+               :narrow   ?w
+               :category 'workspace
+               :default  t
+               :new    #'persp-switch
+               :action #'persp-switch
+               :items  (lambda ()
+                         (let* ((persp-sort 'access)
+                                (names (persp-names)))
+                           (-rotate -1 names)))))
+       :custom
+       (persp-sort 'created)
+       (persp-mode-prefix-key (kbd "C-z"))
+       (persp-initial-frame-name "Main")
+       :config
+       (unless (equal persp-mode t)
+         (persp-mode))
+       (consult-customize consult--source-buffer :hidden t :default nil)
+       (add-to-list 'consult-buffer-sources persp-consult-source)
+       (add-to-list 'consult-buffer-sources persp-consult-source-perspectives 'append))
+   #+end_src
+
+* Appearance
+** Basic UI/UX
+   #+begin_src emacs-lisp
+     (use-package emacs
+       :straight (:type built-in)
+       :custom
+       (visible-bell t)
+       (inhibit-startup-message t) ;; Skip welcome buffer
+       (use-dialog-box nil) ;; Disable dialog boxes since they weren't working in Mac OSX
+       ;; Skip warning on images/videos
+       (large-file-warning-threshold nil)
+       ;; Keyboard Scrolling
+       (scroll-step 1) ;; keyboard scroll one line at a time
+       (scroll-conservatively 1000)        ;; Effectively disables automatic cursor centering when scrolling
+       (scroll-preserve-screen-position t) ;; C/M-v will return the cursor to the previous scrolling position.
+       ;; Mouse Scrolling
+       (mouse-wheel-follow-mouse 't)
+       (mouse-wheel-scroll-amount '(1 ((shift) . 1))) ;; one line at a time
+       (mouse-wheel-progressive-speed nil) ;; don't accelerate scrolling
+       ;; Make vertically split a default
+       (split-height-threshold nil)
+       (split-width-threshold 0)
+       :init
+       (fset 'yes-or-no-p 'y-or-n-p)
+       (scroll-bar-mode 0)
+       (tool-bar-mode 0)
+       (tooltip-mode 0)
+       (menu-bar-mode 0)
+       (set-fringe-mode 10)
+       (global-hl-line-mode 1))
+   #+end_src
+** Fonts
+   #+begin_src emacs-lisp
+     (set-face-attribute 'default nil :font "JetBrainsMono NF" :height 160)
+     (set-face-attribute 'fixed-pitch nil :font "JetBrainsMono NF" :height 1.0)
+     (set-face-attribute 'variable-pitch nil :font "JetBrainsMono NF" :height 1.0)
+     (use-package nerd-icons)
+     (use-package all-the-icons)
+     ;; :custom
+     ;; ;; This's default and is recommendend. To install the font, (M-x nerd-icons-install-fonts)
+     ;; (nerd-icons-font-family "Symbols Nerd Font Mono")) ;;
+   #+end_src
+** Themes
+   #+begin_src emacs-lisp
+     (use-package doom-themes
+       :disabled
+       :custom
+       (doom-themes-treemacs-theme "doom-colors") ; use "doom-atom" for minimal icon theme
+       :config
+       (load-theme 'doom-snazzy t) ;; doom-snazzy, doom-vibrant, doom-palenight
+       ;; (doom-themes-visual-bell-config) ;; Enable flashing mode-line on errors
+       ;; (doom-themes-treemacs-config)
+       (doom-themes-org-config) ;; Corrects (and improves) org-mode's native fontification.
+       )
+
+     (use-package ef-themes
+       :disabled
+       :config
+       (load-theme 'ef-night t))
+
+     (use-package kaolin-themes
+       :config
+       ;; (kaolin-treemacs-theme)
+       (load-theme 'kaolin-dark t))
+   #+end_src
+** Modeline
+   #+begin_src emacs-lisp
+     (use-package doom-modeline
+       :disabled
+       :hook
+       (after-init . doom-modeline-mode)
+       :custom (doom-modeline-height 20))
+
+     (use-package telephone-line
+       ;; :custom
+       ;; (telephone-line-primary-left-separator 'telephone-line-abs-left)
+       ;; (telephone-line-secondary-left-separator 'telephone-line-abs-hollow-left)
+       ;; (telephone-line-primary-right-separator 'telephone-line-abs-right)
+       ;; (telephone-line-secondary-right-separator 'telephone-line-abs-hollow-right)
+       ;; (telephone-line-height 20)
+       :custom-face
+       ;; TODO :: Raise a PR to use (face-attribute .. ..  nil t) in telephone-line repo
+       (telephone-line-accent-active ((t (:background "#2E4038")))) ;; match kaolin accent theme
+       :config
+       (telephone-line-mode 1))
+
+     (use-package mode-line-bell
+       :config (mode-line-bell-mode))
+   #+end_src
+** Transparency
+   #+begin_src emacs-lisp
+     (use-package transwin
+       :bind
+       ("C-c t t" . transwin-toggle)
+       ("C-c t -" . transwin-inc)
+       ("C-c t +" . transwin-dec)
+       ("C-c t s" . transwin-ask)
+       :init
+       (transwin-ask 95))
+   #+end_src
+** Misc packages
+   #+begin_src emacs-lisp
+     ;; convert (C-L) char to a break line
+     (use-package page-break-lines
+       :diminish page-break-lines-mode)
+
+     (use-package rainbow-delimiters)
+
+     ;; sets background color that match color names, e.g. #00ff00.
+     (use-package rainbow-mode)
+
+     (use-package pulsar
+       :config
+       (pulsar-global-mode))
+
+     (use-package hide-mode-line)
+     (use-package adaptive-wrap)
+     (use-package visual-fill-column
+       :custom ;; Defaults (use setq in specific mode hook to override them)
+       (visual-fill-column-fringes-outside-margins nil) ;; set fring near the visual column
+       (visual-fill-column-width 120)
+       (visual-fill-column-center-text t))
+
+     ;; NOTE: The first time you load your configuration on a new machine,
+     ;; you’ll need to run `all-the-icons-install-fonts' command so that mode line icons display correctly.
+     ;; Use Nerd fonts instead
+     ;; (use-package all-the-icons)
+     ;; (use-package treemacs-all-the-icons)
+     ;; (use-package all-the-icons-dired)
+   #+end_src
+** Dashboard
+   #+begin_src emacs-lisp
+     (use-package dashboard
+       :custom
+       (dashboard-startup-banner 'logo)
+       (dashboard-image-banner-max-width 480)
+       (dashboard-page-separator "\n\n\f\n\n")
+       (dashboard-set-file-icons t)
+       (dashboard-set-heading-icons t)
+       (dashboard-display-icons-p t) ; display icons on both GUI and terminal
+       (dashboard-icon-type 'nerd-icons)
+       (dashboard-items '((recents  . 5)
+                          (projects . 5)
+                          (agenda   . 5)))
+       :init
+       (dashboard-setup-startup-hook))
+   #+end_src
+** Doc Pages
+   #+begin_src emacs-lisp
+     (use-package helpful
+       :bind
+       ("C-h f" . helpful-callable)
+       ("C-h F" . helpful-function)
+       ("C-h x" . helpful-command)
+       ("C-h v" . helpful-variable)
+       ("C-h k" . helpful-key)
+       ("C-h ." . helpful-at-point))
+
+     (use-package info-colors
+       :hook
+       (Info-selection . info-colors-fontify-node)
+       (Info-mode . variable-pitch-mode))
+   #+end_src
+
+* Version Control
+** Magit  
+  #+begin_src emacs-lisp
+    (use-package magit)
+    (use-package transient-posframe
+      :custom 
+      (transient-posframe-parameters '((left-fringe . 8) (right-fringe . 8)))
+      :config
+      (transient-posframe-mode))
+  #+end_src
+** Git Timemachine
+   #+begin_src emacs-lisp
+     (use-package git-timemachine)
+   #+end_src
+** Remote Serve Integration
+   #+begin_src emacs-lisp
+     (use-package browse-at-remote
+       :bind
+       ("C-c g g" . browse-at-remote))
+     ;; (use-package code-review) TODO :: pin (package! closql :pin "0a7226331ff1f96142199915c0ac7940bac4afdd")
+   #+end_src
+** Diff
+   #+begin_src emacs-lisp
+     ;; (setq ediff-window-setup-function 'ediff-setup-windows-plain)
+     ;; (setq ediff-split-window-function 'split-window-horizontally)
+   #+end_src
+  
+* Programming
+  #+begin_src emacs-lisp
+    (use-package prog-mode
+      :straight (:type built-in)
+      :hook
+      (prog-mode . display-line-numbers-mode)
+      (prog-mode . rainbow-delimiters-mode)
+      (prog-mode . column-number-mode)    ;; Display column number in the modeline
+      (prog-mode . electric-pair-mode)
+      (prog-mode . show-paren-mode))
+
+    (use-package conf-mode
+      :straight (:type built-in)
+      :hook
+      (conf-mode . display-line-numbers-mode)
+      (conf-mode . rainbow-delimiters-mode)
+      (conf-mode . column-number-mode)    ;; Display column number in the modeline
+      (conf-mode . electric-pair-mode)
+      (conf-mode . show-paren-mode))
+  #+end_src
+** Eglot
+   #+begin_src emacs-lisp
+     (use-package eglot
+       :custom
+       (eglot-autoshutdown t)
+       ;; (eglot-confirm-server-initiated-edits nil)
+       :bind
+       (:map eglot-mode-map
+             ("C-c l a" . eglot-code-actions)
+             ("C-c l r" . eglot-rename)))
+
+     (use-package consult-eglot
+       :straight (:host github :repo "mohkale/consult-eglot")
+       :after eglot
+       :commands (consult-eglot-symbols))
+
+   #+end_src
+** ElDoc
+   #+begin_src emacs-lisp
+     ;; (use-package eldoc-box
+     ;;   :straight (:host github :repo "casouri/eldoc-box")
+     ;;   :after eglot
+     ;;   :bind ("C-c l d" . eldoc-box-help-at-point)
+     ;;   :hook (eglot-managed-mode . eldoc-box-hover-at-point-mode))
+   #+end_src
+** Treesitter
+   #+begin_src emacs-lisp
+     (use-package treesit-auto
+       :custom
+       (treesit-auto-install 'prompt)
+       :config
+       ;; master isn't working
+       (setq kav/go-ts-auto-config
+             (make-treesit-auto-recipe
+              :lang 'go
+              :ts-mode 'go-ts-mode
+              :remap 'go-mode
+              :requires 'gomod
+              :url "https://github.com/tree-sitter/tree-sitter-go"
+              :revision "v0.19.1"
+              :ext "\\.go\\'"))
+       (add-to-list 'treesit-auto-recipe-list kav/go-ts-auto-config)
+       (treesit-auto-add-to-auto-mode-alist 'all)
+       (global-treesit-auto-mode))
+   #+end_src
+** Languages   
+*** Go
+    #+begin_src emacs-lisp
+      (use-package go-ts-mode
+        :preface
+        (defun kav/go-auto-eglot-format-on-save ()
+          (add-hook 'before-save-hook  #'eglot-format nil t))
+        :hook ((go-ts-mode . eglot-ensure)
+               (go-ts-mode . kav/go-auto-eglot-format-on-save)))
+    #+end_src
+*** Python
+    #+begin_src emacs-lisp
+      (use-package python-ts-mode
+        :straight (:type built-in)
+        :mode "\\.py\\'"
+        :hook ((python-ts-mode . eglot-ensure)))
+    #+end_src
+*** Clojure
+    #+begin_src emacs-lisp
+      (use-package clojure-mode)
+    #+end_src 
+
+* Tools
+** Kubernetes
+   #+begin_src emacs-lisp     
+     (use-package kubernetes
+       ;; :custom
+       ;; If you're facing performance issue:
+       ;; (kubernetes-poll-frequency 3600)
+       ;; (kubernetes-redraw-frequency 3600)
+       :commands (kubernetes-overview))
+   #+end_src
+
+  
+* File Management
+** Cross-session config
+   #+begin_src emacs-lisp
+     ;; Saves point location for files when you reopen them
+     (use-package saveplace
+       :config
+       (save-place-mode))       
+   #+end_src
+** Dirvish
+   #+begin_src emacs-lisp
+     (use-package dirvish
+       :custom
+       (dirvish-mode-line-height 25)
+       (dirvish-use-mode-line 'global)
+       (dirvish-attributes '(subtree-state nerd-icons collapse git-msg file-time file-size))
+       (dired-listing-switches "-l --almost-all --human-readable --group-directories-first --no-group")
+       :bind ; Bind `dirvish|dirvish-side|dirvish-dwim' as you see fit
+       (("C-c f" . dirvish-fd)
+        :map dirvish-mode-map ; Dirvish inherits `dired-mode-map'
+        ("a"   . dirvish-quick-access)
+        ("f"   . dirvish-file-info-menu)
+        ("y"   . dirvish-yank-menu)
+        ("N"   . dirvish-narrow)
+        ("^"   . dirvish-history-last)
+        ("h"   . dirvish-history-jump) ; remapped `describe-mode'
+        ("s"   . dirvish-quicksort)    ; remapped `dired-sort-toggle-or-edit'
+        ("v"   . dirvish-vc-menu)      ; remapped `dired-view-file'
+        ("TAB" . dirvish-subtree-toggle)
+        ("M-f" . dirvish-history-go-forward)
+        ("M-b" . dirvish-history-go-backward)
+        ("M-l" . dirvish-ls-switches-menu)
+        ("M-m" . dirvish-mark-menu)
+        ("M-t" . dirvish-layout-toggle)
+        ("M-s" . dirvish-setup-menu)
+        ("M-e" . dirvish-emerge-menu)
+        ("M-j" . dirvish-fd-jump))
+       :init
+       (dirvish-override-dired-mode))
+   #+end_src
+   
+* Completion System
+** Vertico
+   #+begin_src emacs-lisp
+     (use-package vertico
+       :straight (:files (:defaults "extensions/*")) ;; load all extensions
+       :bind (:map vertico-map
+                   ("<backspace>" . vertico-directory-delete-char)
+                   ("C-<backspace>" . vertico-directory-delete-word)
+                   ("M-q" . vertico-quick-insert)
+                   ("C-q" . vertico-quick-exit)
+                   ("RET" . vertico-directory-enter))
+       :custom
+       (vertico-cycle t)
+       (read-file-name-completion-ignore-case t)
+       (read-buffer-completion-ignore-case t)
+       :config
+       (vertico-mode))
+
+     (use-package vertico-posframe
+       :custom
+       (vertico-posframe-parameters '((left-fringe . 8) (right-fringe . 8)))
+       :config
+       (vertico-posframe-mode 1)
+       ;; Disable posframe for consult-line
+       (setq vertico-multiform-commands
+             '((consult-line (:not posframe))
+               (t posframe)))
+       (vertico-multiform-mode))
+   #+end_src
+** Orderless
+   #+begin_src emacs-lisp
+     (use-package orderless
+       :custom (completion-styles '(orderless))
+       (orderless-matching-styles '(orderless-literal
+                                    orderless-prefixes
+                                    orderless-initialism
+                                    orderless-regexp)))
+   #+end_src
+** Consult
+   #+begin_src emacs-lisp
+     (use-package consult
+       ;; :after projectile
+       :ensure-system-package
+       (rg . ripgrep)
+       ;; Replace bindings. Lazily loaded due by `use-package'.
+       :bind ;; C-c bindings (mode-specific-map)
+       ("C-c h" . consult-history)
+       ("C-c m" . consult-mode-command)
+       ("C-c b" . consult-bookmark)
+       ("C-c k" . consult-kmacro)
+       ;; C-x bindings (ctl-x-map)
+       ("C-x M-:" . consult-complex-command)     ;; orig. repeat-complex-command
+       ("C-x b" . consult-buffer)                ;; orig. switch-to-buffer
+       ("C-x 4 b" . consult-buffer-other-window) ;; orig. switch-to-buffer-other-window
+       ("C-x 5 b" . consult-buffer-other-frame)  ;; orig. switch-to-buffer-other-frame
+       ;; Custom M-# bindings for fast register access
+       ;; ("M-#" . consult-register-load)
+       ;; ("M-'" . consult-register-store)          ;; orig. abbrev-prefix-mark (unrelated)
+       ;; ("C-M-#" . consult-register)
+       ;; Other custom bindings
+       ("M-y" . consult-yank-pop)                ;; orig. yank-pop
+       ("<help> a" . consult-apropos)            ;; orig. apropos-command
+       ;; M-g bindings (goto-map)
+       ("M-g a" . consult-org-agenda)
+       ("M-g e" . consult-compile-error)
+       ("M-g f" . consult-flymake)               ;; Alternative: consult-flycheck
+       ("M-g g" . consult-goto-line)             ;; orig. goto-line
+       ("M-g o" . consult-outline)               ;; Alternative: consult-org-heading
+       ("M-g m" . consult-mark)
+       ("M-g k" . consult-global-mark)
+       ("M-g i" . consult-imenu)
+       ("M-g I" . consult-imenu-multi)
+       ;; M-s bindings (search-map)
+       ("M-s f" . consult-find)
+       ("M-s F" . consult-locate)
+       ("M-s g" . consult-grep)
+       ("M-s G" . consult-git-grep)
+       ("M-s r" . consult-ripgrep)
+       ("M-s l" . consult-line)
+       ("M-s L" . consult-line-multi)
+       ("M-s m" . consult-multi-occur)
+       ("M-s k" . consult-keep-lines)
+       ("M-s u" . consult-focus-lines)
+       ;; Isearch integration
+       ;; ("M-s e" . consult-isearch)
+       ;; :map isearch-mode-map
+       ;; ("M-e" . consult-isearch)                 ;; orig. isearch-edit-string
+       ;; ("M-s e" . consult-isearch)               ;; orig. isearch-edit-string
+       ;; ("M-s l" . consult-line)                  ;; needed by consult-line to detect isearch
+       ;; ("M-s L" . consult-line-multi))           ;; needed by consult-line to detect isearch
+
+       :custom
+       ;; Ignore case on buffer and file names
+       (read-file-name-completion-ignore-case t)
+       (read-buffer-completion-ignore-case t)
+       :config
+       (setq completion-in-region-function #'consult-completion-in-region)
+       (setq consult-project-root-function #'projectile-project-root)
+
+       (recentf-mode) ;; keep history of recent closed files
+       (add-to-list 'recentf-exclude no-littering-var-directory)
+       (add-to-list 'recentf-exclude no-littering-etc-directory)
+
+       (consult-customize
+        consult-buffer
+        consult-ripgrep consult-git-grep consult-grep
+        consult-bookmark consult-recent-file consult-xref
+        consult--source-bookmark consult--source-recent-file
+        consult--source-project-recent-file
+        :preview-key "M-."))
+   #+end_src
+** Marginalia + Nerd icons
+   #+begin_src emacs-lisp
+     (use-package marginalia
+       :custom
+       (marginalia-align 'right)
+       :config
+       (marginalia-mode))
+
+     (use-package nerd-icons-completion
+       :after marginalia
+       :hook (marginalia-mode . nerd-icons-completion-marginalia-setup)
+       :init
+       ;; Enable/Disable with marginalia
+       (nerd-icons-completion-marginalia-setup))
+   #+end_src
+** Save History
+   Save the minibuffer history (invoked commands) between sessions
+   #+begin_src emacs-lisp
+     (use-package savehist
+       :custom (history-length 30)
+       :config (savehist-mode 1))
+   #+end_src
+** Which Key
+   #+begin_src emacs-lisp
+     (use-package which-key
+       :defer 3
+       :diminish which-key-mode
+       :custom (which-key-idle-delay 4)
+       :config (which-key-mode))
+     
+     (use-package which-key-posframe
+       :custom
+       (which-key-posframe-parameters  '((left-fringe . 8) (right-fringe . 8)))
+       :config
+       (which-key-posframe-mode))  
+   #+end_src
+** Corfu
+   #+begin_src emacs-lisp
+     (use-package corfu
+       :custom
+       (corfu-auto t)
+       (corfu-cycle t)
+       :init
+       (global-corfu-mode))
+
+     (use-package nerd-icons-corfu
+       :init
+       (add-to-list 'corfu-margin-formatters #'nerd-icons-corfu-formatter))
+   #+end_src
+* Org Mode
+** Org
+   #+begin_src emacs-lisp
+     (use-package org
+       :straight (:type built-in) ;; (:type git)
+       :custom
+       (org-adapt-indentation t)  ;; Enable <tab> indentation
+       (org-cycle-separator-lines -1) ;; Extra empty lines at the end won't be folded with the heading
+       (org-catch-invisible-edits 'smart)
+       ;; Babel
+       (org-confirm-babel-evaluate nil)
+       (org-src-window-setup 'current-window) ;; Layout org-babel's edit-source-block window on the same window
+       (org-image-actual-width nil)
+       ;; UI
+       (org-hide-emphasis-markers t)
+       (org-pretty-entities t) ;; Enables special LaTeX symbols like \alpha (https://orgmode.org/manual/Special-Symbols.html)
+       (org-pretty-entities-include-sub-superscripts nil)
+       (org-export-with-sub-superscripts nil)
+       (org-fontify-quote-and-verse-blocks t)
+       ;; (bidi-paragraph-direction t)
+       ;; (org-fontify-done-headline t)
+       ;; (org-fontify-whole-heading-line t)
+       ;; (org-preview-latex-image-directory "/tmp/ltximg")
+       (org-todo-keywords '((sequence "TODO" "ONGOING" "|" "DONE")))
+       ;; (org-todo-keyword-faces '(("TODO" . "maroon") ("ONGOING" . "orange")))
+       (org-log-done 'time) ;; Log when a todo gets done
+       (org-log-into-drawer t)
+       ;; (org-log-reschedule 'time)
+       ;; :bind
+       ;; (("C-c a" . org-agenda)
+       ;;  ("C-c c" . org-capture)
+       ;;  :map org-mode-map ("C-c l" . org-store-link))
+       :hook
+       (org-mode . org-modern-mode)
+       ;; (org-mode . org-modern-indent-mode)
+       ;; (org-agenda-finalize . org-modern-agenda)
+       ;; (org-mode . visual-line-mode)
+       ;; (org-mode . visual-fill-column-mode)
+       ;; (org-mode . adaptive-wrap-prefix-mode)
+       ;; (org-mode . org-appear-mode)
+       ;; (org-agenda-mode . page-break-lines-mode)
+       :config
+       ;; prevent auto-scrolling after cycling visibility
+       (remove-hook 'org-cycle-hook #'org-cycle-optimize-window-after-visibility-change))
+
+     ;; support langages
+     ;; (org-babel-do-load-languages
+     ;;  'org-babel-load-languages ;; other Babel languages
+     ;;  '((verb . t) (python . t)))
+     ;; (display-line-numbers-mode 0)
+     ;; (plist-put org-format-latex-options :scale 1.3)
+     ;; (plist-put org-format-latex-options :background 'default)
+     ;; (plist-put org-format-latex-options :foreground `auto)
+
+     ;; more cool stuff at https://github.com/psamim/dotfiles/blob/master/doom/config.el
+     ;; (setq truncate-lines nil) ;; hook into org-mode instead
+     ;; (setq org-tags-exclude-from-inheritance '("project"))
+     ;; Templates completion. Needed as of Org 9.2
+     ;; (require 'org-tempo)
+     ;; (add-to-list 'org-structure-template-alist '("el" "#+begin_src emacs-lisp\n?\n#+end_src"))
+     ;; (setq org-clock-sound "~/Music/Great_SMS_tone.wav")
+     ;; (setq org-startup-with-inline-images t)
+     ;; (require 'org-table-wrap-functions)
+   #+end_src
+** Org Modern
+   #+begin_src emacs-lisp
+     (use-package org-modern-indent
+       :custom-face
+       (org-modern-indent-bracket-line ((t (:inherit 'org-block-begin-line)))) ;; Match block face
+       :straight (org-modern-indent :type git :host github :repo "jdtsmith/org-modern-indent"))
+     
+     (use-package org-modern
+       :hook (org-modern-mode . org-modern-indent-mode)
+       :custom
+       (org-modern-block-fringe nil) ;; Disable fringe-block
+       (org-modern-table nil)
+       (org-modern-star 'replace)
+       (org-modern-list '((?* . "•") (?+ . "‣"))) ;; keep hyphen as is
+       (org-modern-block-name '("┄ " . "┄ ")))
+   #+end_src   
+** Org Appear
+   #+begin_src emacs-lisp
+     (use-package org-appear
+       :custom       
+       (org-appear-autolinks  t)
+       (org-appear-autoemphasis  t)
+       (org-appear-delay 1.0))
+   #+end_src
+   
