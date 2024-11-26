@@ -452,6 +452,9 @@
         :straight (:type built-in)
         :mode "\\.py\\'"
         :hook ((python-ts-mode . eglot-ensure)))
+
+      (use-package python-black
+       :hook (python-ts-mode . python-black-on-save-mode))
     #+end_src
 *** Clojure
     #+begin_src emacs-lisp
