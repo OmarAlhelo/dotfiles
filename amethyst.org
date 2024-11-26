@@ -1,0 +1,234 @@
+#+PROPERTY: header-args:yaml-ts :tangle .files/.config/amethyst/amethyst.yml :mkdirp yes
+
+* Amethyst
+** Layout
+   #+begin_src yaml-ts
+     # Ordered list of layouts to use by layout key
+     # (default tall, wide, fullscreen, and column).
+     layouts:
+       - tall
+       - fullscreen
+       - two-pane
+
+     # The smallest height/width that a window can be sized to regardless of its layout frame (in px, default 0)
+     # window-minimum-height: 0
+     # window-minimum-width: 0
+
+     # The integer percentage of the screen dimension to increment and decrement main pane ratios by (default 5).
+     window-resize-step: 5
+
+     # display the name of the layout when a new layout is selected (default true)
+     enables-layout-hud: true
+     # (default true)
+     enables-layout-hud-on-space-change: false
+
+     # (default false)
+     new-windows-to-main: false
+     follow-space-thrown-windows: true
+   #+end_src
+
+** Floating Windows
+   #+begin_src yaml-ts
+     # List of bundle identifiers for applications to either be automatically
+     # floating or automatically tiled based on floating-is-blacklist (default [])
+     floating:
+       - com.apple.systempreferences
+
+     # Boolean flag determining behavior of the floating list (default true)
+     # true if the applications should be floating and all others tiled
+     # false if the applications should be tiled and all others floating 
+     floating-is-blacklist: true
+
+
+     # If windows smaller than a 500px square should be floating by default (default true)
+     float-small-windows: true
+
+   #+end_src
+
+** Margins and Pading
+   #+begin_src yaml-ts
+     window-margins: true
+
+     # The size of the margins betwee windows (in px, default 0)
+     window-margin-size: 2
+
+     # Boolean flag for whether or not to set window margins if there is only
+     # one window on the screen, assuming window margins are enabled (default false)
+     smart-window-margins: false
+
+     # Whether the screen frames should include or exclude the status bar (default false)
+     ignore-menu-bar: false
+
+     # Padding between windows and screen edges (in px, default 0).
+     screen-padding-left: 5
+     screen-padding-right: 5
+     screen-padding-top: 5
+     screen-padding-bottom: 5
+   #+end_src
+
+** Mouse   
+   #+begin_src yaml-ts
+     # mouse-follows-focus: false
+     # focus-follows-mouse: false
+
+     # if dragging and dropping windows on to each other should swap their positions (default false)
+     mouse-swaps-windows: true
+     mouse-resizes-windows: true
+
+   #+end_src
+
+** Keybindings
+   #+begin_src yaml-ts
+
+     mod1: # = option key (remapped with karbiner)
+       - command
+       - option
+       - control
+
+     mod2: # = option + shift
+       - command
+       - option
+       - control
+       - shift
+
+     relaunch-amethyst:
+       mod: mod2
+       key: r
+
+
+     cycle-layout:
+       mod: mod1
+       key: '['
+
+     cycle-layout-backward:
+       mod: mod1
+       key: ']'
+
+     shrink-main:
+       mod: mod1
+       key: h
+
+     expand-main:
+       mod: mod1
+       key: l
+
+     # increase-main:
+     # decrease-main:
+
+     # command1:  
+     # command2:  
+     # command3:  
+     # command4:
+
+     focus-ccw:
+       mod: mod1
+       key: j
+
+     focus-cw:
+       mod: mod1
+       key: k
+
+     focus-main:
+       mod: mod1
+       key: i
+
+     swap-ccw:
+       mod: mod2
+       key: j
+
+     swap-cw:
+       mod: mod2
+       key: k
+
+     swap-main:
+       mod: mod2
+       key: i
+
+     throw-space-1:
+       mod: mod2
+       key: 1
+     throw-space-2:
+       mod: mod2
+       key: 2
+     throw-space-3:
+       mod: mod2
+       key: 3
+     throw-space-4:
+       mod: mod2
+       key: 4
+     throw-space-5:
+       mod: mod2
+       key: 5
+     throw-space-6:
+       mod: mod2
+       key: 6
+     throw-space-7:
+       mod: mod2
+       key: 7  
+     throw-space-8:
+       mod: mod2
+       key: 8  
+     throw-space-9:
+       mod: mod2
+       key: 9
+     throw-space-10:
+       mod: mod2
+       key: 0
+
+     toggle-float:
+       mod: mod1
+       key: f
+
+     display-current-layout:
+       mod: mod1
+       key: f2
+
+     toggle-tiling:
+       mod: mod1
+       key: t
+
+     reevaluate-windows:
+       mod: mod1
+       key: r
+
+
+     # toggle-focus-follows-mouse:
+
+     ## Screen Keybindings
+
+     focus-screen-1:
+       mod: mod1
+       key: q
+
+     focus-screen-2:
+       mod: mod1
+       key: w
+
+     swap-screen-1:
+       mod: mod2
+       key: q
+
+     swap-screen-2:
+       mod: mod2
+       key: w
+
+     # focus-screen-ccw:
+     # focus-screen-cw:
+     # swap-screen-ccw:
+     # swap-screen-cw:
+     # focus-screen-n:
+     # throw-screen-n:
+
+   #+end_src
+
+** Misc
+
+  #+begin_src yaml-ts
+    # (default false)
+    # use-canary-build: false
+
+    # (default true)
+    restore-layouts-on-launch: true
+    # display some optional debug information in the layout HUD (default false)
+    debug-layout-info: true 
+  #+end_src
