@@ -430,7 +430,7 @@
               :remap 'go-mode
               :requires 'gomod
               :url "https://github.com/tree-sitter/tree-sitter-go"
-              :revision "v0.19.1"
+              :revision "v0.20.0"
               :ext "\\.go\\'"))
        (add-to-list 'treesit-auto-recipe-list kav/go-ts-auto-config)
        (treesit-auto-add-to-auto-mode-alist 'all)
