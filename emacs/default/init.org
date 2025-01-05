@@ -371,7 +371,28 @@
      ;; (setq ediff-window-setup-function 'ediff-setup-windows-plain)
      ;; (setq ediff-split-window-function 'split-window-horizontally)
    #+end_src
-  
+** Git Gutter
+   #+begin_src emacs-lisp
+     (use-package git-gutter
+       ;; :hook (prog-mode . git-gutter-mode)
+       :custom
+       (git-gutter:update-interval 0.02)
+       (git-gutter:ask-p nil)
+       :bind
+       ("C-c g s" . git-gutter:stage-hunk)
+       ("C-c g k" . git-gutter:revert-hunk)
+       ("C-c g M-h" . git-gutter:mark-hunk)
+       :config
+       (global-git-gutter-mode))
+
+     ;; TODO: Check diff-hl package as well
+     (use-package git-gutter-fringe
+       :config
+       (define-fringe-bitmap 'git-gutter-fr:added [224] nil nil '(center repeated))
+       (define-fringe-bitmap 'git-gutter-fr:modified [224] nil nil '(center repeated))
+       (define-fringe-bitmap 'git-gutter-fr:deleted [128 192 224 240] nil nil 'bottom))
+   #+end_src
+
 * Programming
   #+begin_src emacs-lisp
     (use-package prog-mode
