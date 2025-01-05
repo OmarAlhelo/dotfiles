@@ -225,7 +225,7 @@
 ** Themes
    #+begin_src emacs-lisp
      (use-package doom-themes
-       :disabled
+       ;; :disabled
        :custom
        (doom-themes-treemacs-theme "doom-colors") ; use "doom-atom" for minimal icon theme
        :config
@@ -241,9 +241,11 @@
        (load-theme 'ef-night t))
 
      (use-package kaolin-themes
+       :disabled
        :config
        ;; (kaolin-treemacs-theme)
-       (load-theme 'kaolin-dark t))
+       (load-theme 'kaolin-temple t)
+       )
    #+end_src
 ** Modeline
    #+begin_src emacs-lisp
