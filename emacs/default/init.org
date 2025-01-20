@@ -196,6 +196,9 @@
        (scroll-conservatively 1000)        ;; Effectively disables automatic cursor centering when scrolling
        (scroll-preserve-screen-position t) ;; C/M-v will return the cursor to the previous scrolling position.
        ;; Mouse Scrolling
+       (mouse-wheel-tilt-scroll 't)
+       (mouse-wheel-flip-direction 't)
+       (mouse-wheel-scroll-amount-horizontal 1)
        (mouse-wheel-follow-mouse 't)
        (mouse-wheel-scroll-amount '(1 ((shift) . 1))) ;; one line at a time
        (mouse-wheel-progressive-speed nil) ;; don't accelerate scrolling
