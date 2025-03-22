@@ -211,6 +211,7 @@
        (tool-bar-mode 0)
        (tooltip-mode 0)
        (menu-bar-mode 0)
+       (repeat-mode t)
        (set-fringe-mode 10)
        (global-hl-line-mode 1))
    #+end_src
