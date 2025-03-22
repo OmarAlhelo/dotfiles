@@ -4,121 +4,74 @@
   [[https://github.com/yqrashawn/GokuRakuJoudo][Goku]] is a tool that lets you manage your Karabiner configuration with ease.
   #+begin_src clojure
     {
-     :profiles {
-                :goku {
-                       :default true
-                       }
-                }
-
-     :applications {
-                    :ex [
-                         "^org\\.gnu\\.Emacs$"
-                         "^com\\.jetbrains\\.pycharm$"
-                         ;; "^com\\.microsoft\\.VSCode$"
-                         ]
+     :profiles { :goku { :default true } }
+     :applications { :ex [
+                          "^org\\.gnu\\.Emacs$"
+                          "^com\\.jetbrains\\.pycharm$"
+                          ;; "^com\\.microsoft\\.VSCode$"
+                          ]
                     }
-
-     ;; :layer {
-     ;;             :send-same { :key :q }
-     ;;             } ;; layers
-
-     ;; :simlayer-threshold 210
-
      :main [
-            {
-             :des "Basic Remaps"
-             :rules [
-                     ;; [:##caps_lock :!CTOleft_shift nil {:alone :return_or_enter}]
-                     [:##caps_lock              :return_or_enter        ]
-                     [:##grave_accent_and_tilde :left_command           ]
-                     [:##non_us_backslash       :grave_accent_and_tilde ]
+            {:des "Basic Remaps"
+             :rules [[:##caps_lock              :return_or_enter]
+                     [:##grave_accent_and_tilde :##non_us_backslash]
+                     [:##non_us_backslash       :left_command ]
 
-                     [:##left_command           :left_option            ]
-                     [:##left_option            :!COleft_control        ]
+                     [:##left_command           :left_option]
+                     [:##left_option            :!COleft_control]
                      ;; [:##left_control           :!TOleft_command        ]
-                     [:##right_option           :left_command           ]
-                     [:##right_command          :right_option           ]
+                     [:##right_option           :left_command]
+                     [:##right_command          :right_option]
+                     [:slash                    {:key :fn :lazy true} nil {:alone :slash}]
 
-                     [:!COTtab                  :!Ctab]
-                     ;; [:!Cspace                  :fn                     ]
-                     ]
+                     [:!COTtab                  :!Ctab]]
              },
             {
              :des "Global Emacs Keybindings"
-             :rules [
-                     ;; [:condi :!ex ["escape-mode" 1]]
-                     ;; [:!C#SOPb		:!Cb]
-                     ;; [:!C#SOPf		:!Cf]
-                     ;; [:!C#SOPn		:!Cn]
-                     ;; [:!C#SOPp		:!Cp]
-
-                     ;; [:!O#SPb		:!Op]
-                     ;; [:!O#SPf		:!Op]
-                     ;; [:!O#SPn		:!Op]
-                     ;; [:!O#SPp		:!Op]
-
-                     ;; [:!C#SOPa		:!Ca]
-                     ;; [:!C#SOPe		:!Ce]
-
-                     ;; [:!C#SOPd		:!Cd]
-                     ;; [:!C#SOPh		:!Ch]
-                     ;; [:!C#SOPi		:!Ci]
-                     ;; [:!C#SOPg		:!Cg]
-                     ;; [:!C#SOPm		:!Cm]
-
-                     ;; [:!C#SOPv		:!Cv]
-                     ;; [:!O#STPv		:!Ov]
-
-                     ;; [:!C#SOPw		:!Cw]
-                     ;; [:!O#STPw		:!Ow]
-                     ;; [:!C#SOPy		:!Cy]
-
-                     ;; [:!Ck		:!Ck]
-
-                     ;; [:!O#Pd		:!Od]
-                     ;; [:!Cslash		:!Cslash]
-
-                     ;; [:!C#SOPq		:!Cq]
-                     ;; [{:any :key_code} ["escape-mode" 0] ["escape-mode" 1]]
-
+             :rules [          
                      [:condi :!ex ["escape-mode" 0]]
-                     [:!Cq [["escape-mode" 1] ] nil ;; [:noti :escape-key "Press any key"]
-                      {:delayed {:invoked  [["escape-mode" 0] ] ;; [:noti :escape-key
-                                 :canceled [["escape-mode" 0] ]}
-                       :params  {:delay 2000}
-                       }
-                      ]
-                     [:!C#SOPb		:left_arrow]
-                     [:!C#SOPf		:right_arrow]
-                     [:!C#SOPp		:up_arrow]
-                     [:!C#SOPn		:down_arrow]
+                     [:!C#SOPb      [:left_arrow          ["escape-mode" 0]]] ;; C-b
+                     [:!C#SOPf      [:right_arrow         ["escape-mode" 0]]] ;; C-f
+                     [:!C#SOPp      [:up_arrow            ["escape-mode" 0]]] ;; C-p
+                     [:!C#SOPn      [:down_arrow          ["escape-mode" 0]]] ;; M-n
+                     [:!O#SPb       [:!Oleft_arrow        ["escape-mode" 0]]] ;; M-b
+                     [:!O#SPf       [:!Oright_arrow       ["escape-mode" 0]]] ;; M-f                     
+                     [:!C#SOPd      [:delete_forward      ["escape-mode" 0]]] ;; C-d
+                     [:!C#SOPh      [:delete_or_backspace ["escape-mode" 0]]] ;; C-h
+                     [:!C#SOPg      [:escape              ["escape-mode" 0]]] ;; C-g
+                     [:!C#SOPm      [:return_or_enter     ["escape-mode" 0]]] ;; C-m
+                     [:!C#SOPv      [:!Oup_arrow          ["escape-mode" 0]]] ;; C-v
+                     [:!O#STPv      [:!Odown_arrow        ["escape-mode" 0]]] ;; M-v
+                     [:!C#SOPw      [:!Cx                 ["escape-mode" 0]]] ;; C-w
+                     [:!O#STPw      [:!Cc                 ["escape-mode" 0]]] ;; M-w
+                     [:!C#SOPy      [:!Cv                 ["escape-mode" 0]]] ;; C-y
+                     [:!Ck          [:!Tk                 ["escape-mode" 0]]] ;; C-k 
+                     [:!O#Pd        [:!Odelete_forward    ["escape-mode" 0]]] ;; M-d
+                     [:!C#Pslash    [:!Cz                 ["escape-mode" 0]]] ;; C-/
+                     [:!Cq          ["escape-mode" 1] nil {:delayed {:invoked ["escape-mode" 0]
+                                                                     :canceled ["escape-mode" 0]}
+                                                           :params {:delay 2000}}]
 
-                     [:!O#SPb		:!Oleft_arrow]
-                     [:!O#SPf		:!Oright_arrow]
-                     [:!O#SPp		:!Oup_arrow]
-                     [:!O#SPn		:!Odown_arrow]
-
-                     [:!C#SOPa		:home]
-                     [:!C#SOPe		:end]
-
-                     [:!C#SOPd		:delete_forward]
-                     [:!C#SOPh		:delete_or_backspace]
-                     [:!C#SOPi		:tab]
-                     [:!C#SOPg		:escape]
-                     [:!C#SOPm		:return_or_enter]
-
-                     [:!C#SOPv		:page_down]
-                     [:!O#STPv		:page_up]
-
-                     [:!C#SOPw		:!Cx]
-                     [:!O#STPw		:!Cc]
-                     [:!C#SOPy		:!Cv]
-
-                     [:!Ck		:!Tk]
-
-                     [:!O#Pd		:!Odelete_forward]
-                     [:!C#Pslash	:!Cz]
-
+                     [:condi :!ex ["escape-mode" 1]]
+                     [:!C#SOPb      [:!Cb                 ["escape-mode" 0]]] ;; C-b
+                     [:!C#SOPf      [:!Cf                 ["escape-mode" 0]]] ;; C-f
+                     [:!C#SOPp      [:!Cp                 ["escape-mode" 0]]] ;; C-p
+                     [:!C#SOPn      [:!Cn                 ["escape-mode" 0]]] ;; M-n
+                     [:!O#SPb       [:!Ob                 ["escape-mode" 0]]] ;; M-b
+                     [:!O#SPf       [:!Of                 ["escape-mode" 0]]] ;; M-f                     
+                     [:!C#SOPd      [:!Cd                 ["escape-mode" 0]]] ;; C-d
+                     [:!C#SOPh      [:!Ch                 ["escape-mode" 0]]] ;; C-h
+                     [:!C#SOPg      [:!Cg                 ["escape-mode" 0]]] ;; C-g
+                     [:!C#SOPm      [:!Cm                 ["escape-mode" 0]]] ;; C-m
+                     [:!C#SOPv      [:!Cv                 ["escape-mode" 0]]] ;; C-v
+                     [:!O#STPv      [:!Ov                 ["escape-mode" 0]]] ;; M-v
+                     [:!C#SOPw      [:!Cw                 ["escape-mode" 0]]] ;; C-w
+                     [:!O#STPw      [:!Ow                 ["escape-mode" 0]]] ;; M-w
+                     [:!C#SOPy      [:!Cy                 ["escape-mode" 0]]] ;; C-y
+                     [:!Ck          [:!Ck                 ["escape-mode" 0]]] ;; C-k 
+                     [:!O#Pd        [:!Od                 ["escape-mode" 0]]] ;; M-d
+                     [:!C#Pslash    [:!Cslash             ["escape-mode" 0]]] ;; C-/
+                     [:any          [:vk_none             ["escape-mode" 0]]]
                      ]
              }
             ]
