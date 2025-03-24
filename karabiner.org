@@ -5,17 +5,25 @@
   #+begin_src clojure
     {
      :profiles { :goku { :default true } }
+     :devices { :k3 [{:vendor_id 13364 :product_id 2609}] }
      :applications { :ex [
                           "^org\\.gnu\\.Emacs$"
                           "^com\\.jetbrains\\.pycharm$"
+                          ;; "^org\\.alacritty$"
                           ;; "^com\\.microsoft\\.VSCode$"
                           ]
                     }
      :main [
             {:des "Basic Remaps"
              :rules [[:##caps_lock              :return_or_enter]
-                     [:##grave_accent_and_tilde :##non_us_backslash]
-                     [:##non_us_backslash       :left_command ]
+
+                     [:##non_us_backslash :##grave_accent_and_tilde :!k3]
+                     [:##grave_accent_and_tilde :left_command       :!k3]
+
+                     [:##non_us_backslash       :left_command       :k3]
+
+                     ;; [:##non_us_backslash       :left_command :k3]
+
 
                      [:##left_command           :left_option]
                      [:##left_option            :!COleft_control]
