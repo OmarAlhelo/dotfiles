@@ -454,6 +454,8 @@
      (use-package consult-eglot
        :straight (:host github :repo "mohkale/consult-eglot")
        :after eglot
+       :bind
+       ("M-g ?" . consult-eglot-symbols)
        :commands (consult-eglot-symbols))
 
    #+end_src
@@ -584,10 +586,12 @@
        :custom
        (vertico-posframe-parameters '((left-fringe . 8) (right-fringe . 8)))
        :config
-       (vertico-posframe-mode 1)
+       ;; (vertico-posframe-mode -1)
        ;; Disable posframe for consult-line
        (setq vertico-multiform-commands
              '((consult-line (:not posframe))
+               (xref-find-references (:not posframe))
+               (consult-eglot-symbols (:not posframe))
                (t posframe)))
        (vertico-multiform-mode))
    #+end_src
@@ -657,6 +661,9 @@
        ;; Ignore case on buffer and file names
        (read-file-name-completion-ignore-case t)
        (read-buffer-completion-ignore-case t)
+       (xref-show-xrefs-function #'consult-xref)
+       (xref-show-definitions-function #'consult-xref)
+
        :config
        (setq completion-in-region-function #'consult-completion-in-region)
        (setq consult-project-root-function #'projectile-project-root)
