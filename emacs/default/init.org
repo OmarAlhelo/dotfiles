@@ -152,6 +152,27 @@
              ("w" . avy-goto-word-1)
              ("M-g" . avy-goto-line)))         
    #+end_src
+** Window Management
+   #+begin_src emacs-lisp
+     (use-package winner-mode
+       :straight (:type built-in)
+       :bind
+       ("C-x /" . winner-undo)
+       ("C-x `" . winner-undo)
+       ("C-x ?" . winner-redo)
+       :config
+       (winner-mode))
+
+     (defvar-keymap kav/windmove-keymap
+       :repeat t
+       "b" #'windmove-left
+       "n" #'windmove-down
+       "p" #'windmove-up
+       "f" #'windmove-right)
+
+     (keymap-global-set "H-w" kav/windmove-keymap)
+   #+end_src
+
 ** Perspective
    #+begin_src emacs-lisp
      (use-package perspective
