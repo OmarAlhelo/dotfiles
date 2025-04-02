@@ -9,6 +9,7 @@
      :applications { :ex [
                           "^org\\.gnu\\.Emacs$"
                           "^com\\.jetbrains\\.pycharm$"
+                          ;; "^com\\.todesktop\\.230313mzl4w4u92"
                           ;; "^org\\.alacritty$"
                           ;; "^com\\.microsoft\\.VSCode$"
                           ]
@@ -43,13 +44,15 @@
                      [:!C#SOPp      [:up_arrow            ["escape-mode" 0]]] ;; C-p
                      [:!C#SOPn      [:down_arrow          ["escape-mode" 0]]] ;; M-n
                      [:!O#SPb       [:!Oleft_arrow        ["escape-mode" 0]]] ;; M-b
-                     [:!O#SPf       [:!Oright_arrow       ["escape-mode" 0]]] ;; M-f                     
+                     [:!O#SPf       [:!Oright_arrow       ["escape-mode" 0]]] ;; M-f
+                     [:!C#SOPa      [:home                ["escape-mode" 0]]] ;; C-a
+                     [:!C#SOPe      [:end                 ["escape-mode" 0]]] ;; C-e
                      [:!C#SOPd      [:delete_forward      ["escape-mode" 0]]] ;; C-d
                      [:!C#SOPh      [:delete_or_backspace ["escape-mode" 0]]] ;; C-h
                      [:!C#SOPg      [:escape              ["escape-mode" 0]]] ;; C-g
                      [:!C#SOPm      [:return_or_enter     ["escape-mode" 0]]] ;; C-m
-                     [:!C#SOPv      [:!Oup_arrow          ["escape-mode" 0]]] ;; C-v
-                     [:!O#STPv      [:!Odown_arrow        ["escape-mode" 0]]] ;; M-v
+                     [:!C#SOPv      [:!Odown_arrow        ["escape-mode" 0]]] ;; C-v
+                     [:!O#STPv      [:!Oup_arrow          ["escape-mode" 0]]] ;; M-v
                      [:!C#SOPw      [:!Cx                 ["escape-mode" 0]]] ;; C-w
                      [:!O#STPw      [:!Cc                 ["escape-mode" 0]]] ;; M-w
                      [:!C#SOPy      [:!Cv                 ["escape-mode" 0]]] ;; C-y
@@ -66,7 +69,9 @@
                      [:!C#SOPp      [:!Cp                 ["escape-mode" 0]]] ;; C-p
                      [:!C#SOPn      [:!Cn                 ["escape-mode" 0]]] ;; M-n
                      [:!O#SPb       [:!Ob                 ["escape-mode" 0]]] ;; M-b
-                     [:!O#SPf       [:!Of                 ["escape-mode" 0]]] ;; M-f                     
+                     [:!O#SPf       [:!Of                 ["escape-mode" 0]]] ;; M-f
+                     [:!C#SOPa      [:!Ca                 ["escape-mode" 0]]] ;; C-a
+                     [:!C#SOPe      [:!Ce                 ["escape-mode" 0]]] ;; C-e
                      [:!C#SOPd      [:!Cd                 ["escape-mode" 0]]] ;; C-d
                      [:!C#SOPh      [:!Ch                 ["escape-mode" 0]]] ;; C-h
                      [:!C#SOPg      [:!Cg                 ["escape-mode" 0]]] ;; C-g
